@@ -20,12 +20,12 @@ void UpdateGameCamera() {
         case CAM_FIRST_PERSON:
             cam.position = (Vector3){
                 carPos.x + fwd_x * 0.2f,
-                carPos.y + 0.3f,
+                carPos.y + 0.8f,
                 carPos.z + fwd_z * 0.2f
             };
             cam.target = (Vector3){
                 carPos.x + fwd_x * 5.0f,
-                carPos.y + 0.3f,
+                carPos.y + 0.8f,
                 carPos.z + fwd_z * 5.0f
             };
             break;
@@ -33,19 +33,19 @@ void UpdateGameCamera() {
         case CAM_THIRD_CLOSE:
             cam.position = (Vector3){
                 carPos.x - fwd_x * 3.0f,
-                carPos.y + 1.5f,
+                carPos.y + 2.5f,
                 carPos.z - fwd_z * 3.0f
             };
-            cam.target = carPos;
+            cam.target = (Vector3){ carPos.x, carPos.y + 0.5f, carPos.z };
             break;
 
         case CAM_THIRD_FAR:
             cam.position = (Vector3){
                 carPos.x - fwd_x * 8.0f,
-                carPos.y + 4.0f,
+                carPos.y + 5.0f,
                 carPos.z - fwd_z * 8.0f
             };
-            cam.target = carPos;
+            cam.target = (Vector3){ carPos.x, carPos.y + 0.5f, carPos.z };
             break;
     }
 }
