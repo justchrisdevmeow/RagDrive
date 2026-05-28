@@ -1,0 +1,27 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install raylib
+        run: |
+          curl -L https://github.com/raysan5/raylib/releases/download/5.0/raylib-5.0_win64_msvc16.zip -o raylib.zip
+          unzip raylib.zip -d raylib
+      
+      - name: Compile
+        run: |
+          cl src/main.c raylib/lib/raylib.lib /I raylib/include /link user32.lib gdi32.lib winmm.lib /out:RagDrive.exe
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RagDrive
+          path: RagDrive.exe
