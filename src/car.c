@@ -43,7 +43,12 @@ void UpdatePhysics() {
 
     speed += accel * dt;
     speed *= 0.98f;
-    rotation += steer * speed * dt;
+
+    float effectiveSpeed = speed;
+    if(fabsf(effectiveSpeed) < 1.0f && (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT)))
+        effectiveSpeed = (speed >= 0 ? 1.0f : -1.0f);
+
+    rotation += steer * effectiveSpeed * dt;
 
     // Gravity
     for(int i = 0; i < NODES; i++)
@@ -103,7 +108,7 @@ void DrawCar() {
     float angleY = rotation * RAD2DEG;
     carModel.transform = MatrixMultiply(
         MatrixRotateX(DEG2RAD * -90),
-        MatrixRotateY(DEG2RAD * angleY)
+        MatrixRotateY(DEG2RAD * (angleY + 180.0f))
     );
     DrawModel(carModel, carPos, 1.0f, WHITE);
 }
