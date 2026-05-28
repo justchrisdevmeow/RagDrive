@@ -41,19 +41,19 @@ void UpdatePhysics() {
     speed *= 0.98f;
     rotation += steer * speed * dt;
     
-    // GRAVITY
+    // Gravity
     for(int i=0;i<NODES;i++) {
         nodes[i].vel.y -= 15.0f * dt;
     }
     
-    // euler integration
+    // Euler integration
     for(int i=0;i<NODES;i++) {
         nodes[i].pos.x += nodes[i].vel.x * dt;
         nodes[i].pos.y += nodes[i].vel.y * dt;
         nodes[i].pos.z += nodes[i].vel.z * dt;
     }
     
-    // sprinng constraints
+    // Spring constraints
     int springs[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
     for(int iter=0; iter<10; iter++) {
         for(int s=0;s<12;s++) {
@@ -74,7 +74,7 @@ void UpdatePhysics() {
         }
     }
     
-    // grounnd collision
+    // Ground collision
     for(int i=0;i<NODES;i++) {
         if(nodes[i].pos.y < 0.0f) {
             nodes[i].pos.y = 0.0f;
@@ -82,7 +82,7 @@ void UpdatePhysics() {
         }
     }
     
-    // apply driving
+    // Apply driving
     for(int i=0;i<NODES;i++) {
         nodes[i].pos.x += sin(rotation) * speed * dt;
         nodes[i].pos.z += cos(rotation) * speed * dt;
@@ -92,7 +92,6 @@ void UpdatePhysics() {
 }
 
 void DrawCar() {
-    // calc car center position (average of all nodes)
     Vector3 carPos = {0,0,0};
     for(int i=0;i<NODES;i++) {
         carPos.x += nodes[i].pos.x;
@@ -103,18 +102,23 @@ void DrawCar() {
     carPos.y /= NODES;
     carPos.z /= NODES;
     
-    // calc rotation angle (from driving direction)
     float angleY = rotation * RAD2DEG;
     
-    // draw 3D model
+    // Fix facing down: rotate X by -90, then apply driving rotation
+    DrawModelEx(carModel, carPos, (Vector3){1,0,0}, -90, (Vector3){1,1,1}, WHITE);
     DrawModelEx(carModel, carPos, (Vector3){0,1,0}, angleY, (Vector3){1,1,1}, WHITE);
+    
+    // Debug wireframe (uncomment to see soft-body)
+    // int springs[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
+    // for(int s=0;s<12;s++) {
+    //     DrawLine3D(nodes[springs[s][0]].pos, nodes[springs[s][1]].pos, RED);
+    // }
 }
 
 int main() {
     InitWindow(1024, 768, "RagDrive - Soft Body Car");
     SetTargetFPS(60);
     
-    // Load models
     carModel = LoadModel("car.glb");
     mapModel = LoadModel("map.glb");
     
@@ -128,17 +132,8 @@ int main() {
         ClearBackground(DARKGRAY);
         BeginMode3D(cam);
         
-        // draw map
         DrawModel(mapModel, (Vector3){0,0,0}, 1.0f, WHITE);
-        
-        // draw car
         DrawCar();
-        
-        // Optional: draw wireframe debug (comment out if not needed)
-        // int springs[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
-        // for(int s=0;s<12;s++) {
-        //     DrawLine3D(nodes[springs[s][0]].pos, nodes[springs[s][1]].pos, RED);
-        // }
         
         EndMode3D();
         
