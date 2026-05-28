@@ -10,7 +10,7 @@ void InitGameCamera() {
     cam.fovy = 60;
 }
 
-void UpdateCamera() {
+void UpdateGameCamera() {
     Vector3 carPos = GetCarCenter();
 
     float fwd_x = -sin(rotation);
