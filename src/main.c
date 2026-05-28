@@ -10,10 +10,9 @@ float speed = 0, rotation = 0;
 Camera3D cam = { 0 };
 
 void InitCar() {
-    // 8 nodes forming a cube chassis
     Vector3 offsets[] = {
-        {-0.5,0,-0.8}, { 0.5,0,-0.8}, { 0.5,0,0.8}, {-0.5,0,0.8}, // bottom
-        {-0.5,0.4,-0.8},{ 0.5,0.4,-0.8},{ 0.5,0.4,0.8},{-0.5,0.4,0.8}  // top
+        {-0.5,0.2,-0.8}, { 0.5,0.2,-0.8}, { 0.5,0.2,0.8}, {-0.5,0.2,0.8},
+        {-0.5,0.6,-0.8}, { 0.5,0.6,-0.8}, { 0.5,0.6,0.8}, {-0.5,0.6,0.8}
     };
     for(int i=0;i<NODES;i++) {
         nodes[i].pos = nodes[i].old = offsets[i];
@@ -35,12 +34,24 @@ void UpdatePhysics() {
     speed *= 0.97f;
     rotation += steer * speed * GetFrameTime();
     
-    // Move all nodes
+    // MOVEE all nodes
     for(int i=0;i<NODES;i++) {
         nodes[i].pos.x += sin(rotation) * speed * GetFrameTime();
         nodes[i].pos.z += cos(rotation) * speed * GetFrameTime();
-        
-        // Verlet
+    }
+    
+    // GROUND THE COLLISION (before Verlet)
+    for(int i=0;i<NODES;i++) {
+        if(nodes[i].pos.y <= 0.1f) {
+            nodes[i].pos.y = 0.1f;
+            nodes[i].old.y = 0.1f;
+            nodes[i].damage += 0.005f;
+            if(nodes[i].damage > 1.0f) nodes[i].damage = 1.0f;
+        }
+    }
+    
+    // vertlet integration
+    for(int i=0;i<NODES;i++) {
         Vector3 vel = { nodes[i].pos.x - nodes[i].old.x,
                        nodes[i].pos.y - nodes[i].old.y,
                        nodes[i].pos.z - nodes[i].old.z };
@@ -50,7 +61,7 @@ void UpdatePhysics() {
         nodes[i].pos.z += vel.z;
     }
     
-    // Spring constraints (edges of cube)
+    // Spring constraints
     int springs[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
     for(int s=0;s<12;s++) {
         Vector3 delta = { nodes[springs[s][1]].pos.x - nodes[springs[s][0]].pos.x,
@@ -68,15 +79,6 @@ void UpdatePhysics() {
         nodes[springs[s][1]].pos.z += delta.z * diff;
     }
     
-    // Ground collision
-    for(int i=0;i<NODES;i++) {
-        if(nodes[i].pos.y < 0) {
-            nodes[i].pos.y = 0;
-            nodes[i].damage += 0.02f;
-            if(nodes[i].damage > 1.0f) nodes[i].damage = 1.0f;
-        }
-    }
-    
     cam.target = nodes[0].pos;
 }
 
@@ -90,15 +92,15 @@ void DrawCar() {
         DrawLine3D(nodes[springs[s][0]].pos, nodes[springs[s][1]].pos, c);
     }
     
-    // Wheels (spheres at bottom corners)
-    DrawSphere((Vector3){nodes[0].pos.x, -0.1f, nodes[0].pos.z}, 0.15f, BLACK);
-    DrawSphere((Vector3){nodes[1].pos.x, -0.1f, nodes[1].pos.z}, 0.15f, BLACK);
-    DrawSphere((Vector3){nodes[2].pos.x, -0.1f, nodes[2].pos.z}, 0.15f, BLACK);
-    DrawSphere((Vector3){nodes[3].pos.x, -0.1f, nodes[3].pos.z}, 0.15f, BLACK);
+    // da wheels
+    DrawSphere((Vector3){nodes[0].pos.x, 0.0f, nodes[0].pos.z}, 0.15f, BLACK);
+    DrawSphere((Vector3){nodes[1].pos.x, 0.0f, nodes[1].pos.z}, 0.15f, BLACK);
+    DrawSphere((Vector3){nodes[2].pos.x, 0.0f, nodes[2].pos.z}, 0.15f, BLACK);
+    DrawSphere((Vector3){nodes[3].pos.x, 0.0f, nodes[3].pos.z}, 0.15f, BLACK);
 }
 
 int main() {
-    InitWindow(1024, 768, "RagDrive - 3D Soft Body Car");
+    InitWindow(1024, 768, "RagDrive - prototype test2");
     SetTargetFPS(60);
     InitCar();
     
@@ -114,7 +116,7 @@ int main() {
         EndMode3D();
         
         DrawText("Arrow keys drive | R reset | 3D Soft-Body", 10, 10, 20, WHITE);
-        DrawText(TextFormat("Speed: %.1f", speed), 10, 35, 20, WHITE);
+        DrawText(TextFormat("Speed: %.1f | Damage: %.0f%%", speed, nodes[0].damage * 100), 10, 35, 20, WHITE);
         DrawFPS(10, 60);
         EndDrawing();
     }
