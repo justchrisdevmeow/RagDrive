@@ -1,10 +1,8 @@
 name: Build Windows EXE
-
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
@@ -19,7 +17,7 @@ jobs:
           
       - name: Compile with MinGW
         run: |
-          gcc src/main.c -I raylib-5.0_win64_mingw-w64/include -L raylib-5.0_win64_mingw-w64/lib -lraylib -lopengl32 -lgdi32 -lwinmm -o RagDrive.exe
+          gcc src/main.c src/car.c src/camera.c -I raylib-5.0_win64_mingw-w64/include -L raylib-5.0_win64_mingw-w64/lib -lraylib -lopengl32 -lgdi32 -lwinmm -lm -o RagDrive.exe
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
