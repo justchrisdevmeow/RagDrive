@@ -11,4 +11,4 @@ extern Camera3D cam;
 extern CamMode camMode;
 
 void InitGameCamera();
-void UpdateCamera();
+void UpdateGameCamera();
