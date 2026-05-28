@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <math.h>
 
 #define NODES 8
@@ -41,19 +42,16 @@ void UpdatePhysics() {
     speed *= 0.98f;
     rotation += steer * speed * dt;
     
-    // Gravity
     for(int i=0;i<NODES;i++) {
         nodes[i].vel.y -= 15.0f * dt;
     }
     
-    // Euler integration
     for(int i=0;i<NODES;i++) {
         nodes[i].pos.x += nodes[i].vel.x * dt;
         nodes[i].pos.y += nodes[i].vel.y * dt;
         nodes[i].pos.z += nodes[i].vel.z * dt;
     }
     
-    // Spring constraints
     int springs[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
     for(int iter=0; iter<10; iter++) {
         for(int s=0;s<12;s++) {
@@ -74,7 +72,6 @@ void UpdatePhysics() {
         }
     }
     
-    // Ground collision
     for(int i=0;i<NODES;i++) {
         if(nodes[i].pos.y < 0.0f) {
             nodes[i].pos.y = 0.0f;
@@ -82,7 +79,6 @@ void UpdatePhysics() {
         }
     }
     
-    // Apply driving
     for(int i=0;i<NODES;i++) {
         nodes[i].pos.x += sin(rotation) * speed * dt;
         nodes[i].pos.z += cos(rotation) * speed * dt;
@@ -101,18 +97,11 @@ void DrawCar() {
     carPos.x /= NODES;
     carPos.y /= NODES;
     carPos.z /= NODES;
-    
+
     float angleY = rotation * RAD2DEG;
-    
-    // Fix facing down: rotate X by -90, then apply driving rotation
-    DrawModelEx(carModel, carPos, (Vector3){1,0,0}, -90, (Vector3){1,1,1}, WHITE);
-    DrawModelEx(carModel, carPos, (Vector3){0,1,0}, angleY, (Vector3){1,1,1}, WHITE);
-    
-    // Debug wireframe (uncomment to see soft-body)
-    // int springs[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
-    // for(int s=0;s<12;s++) {
-    //     DrawLine3D(nodes[springs[s][0]].pos, nodes[springs[s][1]].pos, RED);
-    // }
+
+    carModel.transform = MatrixMultiply(MatrixRotateX(DEG2RAD * -90), MatrixRotateY(DEG2RAD * angleY));
+    DrawModel(carModel, carPos, 1.0f, WHITE);
 }
 
 int main() {
@@ -122,6 +111,8 @@ int main() {
     carModel = LoadModel("car.glb");
     mapModel = LoadModel("map.glb");
     
+    mapModel.transform = MatrixRotateX(DEG2RAD * -90);
+
     InitCar();
     
     while(!WindowShouldClose()) {
