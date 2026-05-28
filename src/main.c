@@ -25,7 +25,7 @@ int main() {
 
         // Update
         UpdatePhysics();
-        UpdateCamera();
+        UpdateGameCamera();
 
         // Draw
         BeginDrawing();
